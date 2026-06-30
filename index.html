@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biblioteca Escolar — E.M. Wladimir de Paula Gomes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --azul-escuro:#16324F;
+  --azul-claro:#4F86C6;
+  --azul-bruma:#E9F1F9;
+  --branco:#FFFFFF;
+  --cinza-claro:#F3F5F7;
+  --cinza-borda:#DCE3EA;
+  --texto:#22313F;
+  --texto-suave:#5C6B7A;
+  --verde:#2F8F6B;
+  --verde-bg:#E5F5EE;
+  --vermelho:#C24545;
+  --vermelho-bg:#FBEAEA;
+  --amarelo:#C98A1E;
+  --amarelo-bg:#FBF1DD;
+  --radius:14px;
+  --shadow:0 2px 10px rgba(22,50,79,0.07);
+  --shadow-lg:0 12px 30px rgba(22,50,79,0.14);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',sans-serif;background:var(--cinza-claro);color:var(--texto);}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+button{font-family:inherit;cursor:pointer;}
+a{color:inherit;}
+
+/* ===== HEADER ===== */
+header.app-header{
+  background:linear-gradient(120deg,var(--azul-escuro) 0%,#1d4470 100%);
+  color:var(--branco);
+  padding:22px 28px;
+  display:flex;flex-wrap:wrap;gap:16px;
+  align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  box-shadow:var(--shadow-lg);
+}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-mark{
+  width:52px;height:52px;border-radius:12px;
+  background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.25);
+}
+.brand-text h1{margin:0;font-size:1.35rem;font-weight:600;letter-spacing:.2px;}
+.brand-text p{margin:2px 0 0;font-size:.78rem;color:#BFD3EA;letter-spacing:.3px;}
+.header-meta{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+.meta-block{text-align:right;}
+.meta-block .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#9FBADA;}
+.meta-block .value{font-size:1.0rem;font-weight:600;}
+.clock-value{font-family:'JetBrains Mono',monospace;font-size:1.15rem;letter-spacing:.04em;}
+.greeting-pill{
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
+  padding:8px 16px;border-radius:30px;font-size:.85rem;font-weight:500;
+}
+.weather-pill{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  padding:8px 14px;border-radius:30px;font-size:.85rem;
+}
+.weather-pill .icon{font-size:1.2rem;}
+
+/* ===== NAV ===== */
+nav.tabs{
+  display:flex;gap:6px;padding:14px 28px 0;background:var(--cinza-claro);
+  overflow-x:auto;
+}
+nav.tabs button{
+  background:transparent;border:none;padding:10px 18px;border-radius:10px 10px 0 0;
+  font-size:.92rem;font-weight:600;color:var(--texto-suave);white-space:nowrap;
+  border-bottom:3px solid transparent;transition:.15s;
+}
+nav.tabs button.active{color:var(--azul-escuro);border-bottom:3px solid var(--azul-escuro);background:var(--branco);}
+nav.tabs button:hover{color:var(--azul-escuro);}
+
+main{padding:24px 28px 60px;max-width:1400px;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ===== DASHBOARD LAYOUT ===== */
+.dash-grid{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start;}
+@media(max-width:980px){.dash-grid{grid-template-columns:1fr;}}
+
+.panel{background:var(--branco);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border:1px solid var(--cinza-borda);}
+.panel h2{margin:0 0 14px;font-size:1.1rem;font-weight:600;color:var(--azul-escuro);display:flex;align-items:center;gap:8px;}
+
+.stats-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.stat-card{
+  flex:1;min-width:150px;background:var(--branco);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--cinza-borda);
+  border-left:4px solid var(--azul-claro);
+}
+.stat-card.alert{border-left-color:var(--vermelho);}
+.stat-card .num{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;color:var(--azul-escuro);}
+.stat-card.alert .num{color:var(--vermelho);}
+.stat-card .lbl{font-size:.78rem;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.05em;}
+
+/* Turmas grid */
+.series-block{margin-bottom:18px;}
+.series-block h3{margin:0 0 10px;font-size:.85rem;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.06em;font-family:'Inter';font-weight:700;}
+.turma-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.turma-card{
+  background:var(--azul-bruma);border:1px solid var(--cinza-borda);border-radius:10px;
+  padding:14px 12px;text-align:center;transition:.15s;position:relative;
+}
+.turma-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--azul-claro);}
+.turma-card .nome{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;color:var(--azul-escuro);}
+.turma-card .qtd{font-size:.72rem;color:var(--texto-suave);margin-top:3px;}
+.turma-card .badge-atraso{
+  position:absolute;top:-6px;right:-6px;background:var(--vermelho);color:#fff;
+  font-size:.65rem;font-weight:700;border-radius:20px;padding:2px 6px;
+}
+
+/* Reflection card */
+.reflexao-card{
+  background:linear-gradient(160deg,var(--azul-escuro),#234d7c);
+  color:#fff;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-lg);
+}
+.reflexao-card .tag{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#9FBADA;margin-bottom:10px;}
+.reflexao-card blockquote{margin:0;font-family:'Fraunces',serif;font-size:1.15rem;line-height:1.5;font-style:italic;}
+.reflexao-card .autor{margin-top:12px;font-size:.78rem;color:#BFD3EA;}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+th{text-align:left;padding:10px 12px;background:var(--azul-bruma);color:var(--azul-escuro);font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;}
+td{padding:10px 12px;border-bottom:1px solid var(--cinza-borda);vertical-align:middle;}
+tr.atraso td{background:var(--vermelho-bg);}
+.table-wrap{overflow-x:auto;}
+.status-chip{padding:4px 10px;border-radius:20px;font-size:.74rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
+.status-chip.ok{background:var(--verde-bg);color:var(--verde);}
+.status-chip.alerta{background:var(--amarelo-bg);color:var(--amarelo);}
+.status-chip.atraso{background:var(--vermelho-bg);color:var(--vermelho);}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-weight:600;font-size:.85rem;}
+.btn-primary{background:var(--azul-escuro);color:#fff;}
+.btn-primary:hover{background:#0f2840;}
+.btn-success{background:var(--verde);color:#fff;}
+.btn-success:hover{background:#256f53;}
+.btn-ghost{background:transparent;border:1px solid var(--cinza-borda);color:var(--texto);}
+.btn-small{padding:6px 12px;font-size:.78rem;}
+.empty-state{padding:30px;text-align:center;color:var(--texto-suave);}
+
+/* ===== MODAL ===== */
+.overlay{
+  position:fixed;inset:0;background:rgba(22,50,79,0.45);display:none;
+  align-items:flex-start;justify-content:center;z-index:200;padding:40px 16px;overflow-y:auto;
+}
+.overlay.active{display:flex;}
+.modal{
+  background:#fff;border-radius:var(--radius);max-width:640px;width:100%;
+  box-shadow:var(--shadow-lg);animation:pop .15s ease;
+}
+@keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--cinza-borda);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h2{margin:0;font-size:1.15rem;color:var(--azul-escuro);}
+.modal-close{background:none;border:none;font-size:1.3rem;color:var(--texto-suave);}
+.modal-body{padding:22px 24px;}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--cinza-borda);display:flex;justify-content:flex-end;gap:10px;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--texto-suave);margin-bottom:6px;}
+.field input,.field select{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--cinza-borda);
+  font-size:.92rem;font-family:inherit;background:#fbfcfd;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--azul-claro);background:#fff;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+fieldset{border:1px solid var(--cinza-borda);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+legend{font-size:.78rem;font-weight:700;color:var(--azul-escuro);padding:0 6px;}
+.info-box{
+  background:var(--amarelo-bg);border:1px solid #ecd6a3;border-radius:8px;padding:12px 14px;
+  font-size:.85rem;margin-bottom:14px;color:#7a5614;
+}
+.info-box b{color:var(--vermelho);}
+.autocomplete{position:relative;}
+.ac-list{
+  position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--cinza-borda);
+  border-radius:8px;box-shadow:var(--shadow-lg);max-height:200px;overflow-y:auto;z-index:30;margin-top:4px;
+}
+.ac-list div{padding:9px 12px;font-size:.85rem;cursor:pointer;}
+.ac-list div:hover{background:var(--azul-bruma);}
+
+/* Search tab */
+.search-box{display:flex;gap:10px;margin-bottom:20px;}
+.search-box input{flex:1;padding:12px 16px;border-radius:10px;border:1px solid var(--cinza-borda);font-size:.95rem;}
+.book-result{
+  border:1px solid var(--cinza-borda);border-radius:10px;padding:16px;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.book-result .titulo{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;color:var(--azul-escuro);}
+.book-detail{font-size:.82rem;color:var(--texto-suave);margin-top:4px;}
+
+/* Stats */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;border:1px solid var(--cinza-borda);}
+.chart-card h3{margin:0 0 12px;font-size:.95rem;color:var(--azul-escuro);}
+.kv-list div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cinza-borda);font-size:.88rem;}
+.kv-list div:last-child{border-bottom:none;}
+
+.section-title{font-size:1.3rem;margin:0 0 16px;color:var(--azul-escuro);}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--azul-claro);font-weight:600;font-size:.85rem;margin-bottom:14px;background:none;border:none;}
+.student-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--cinza-borda);border-radius:10px;margin-bottom:8px;}
+.student-row .nome{font-weight:600;}
+.student-row .codigo{font-size:.78rem;color:var(--texto-suave);}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.muted{color:var(--texto-suave);font-size:.85rem;}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-mark">📚</div>
+    <div class="brand-text">
+      <h1>Biblioteca Escolar</h1>
+      <p>Escola Municipal Wladimir de Paula Gomes</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="greeting-pill" id="greeting">—</div>
+    <div class="weather-pill" id="weatherPill"><span class="icon">⛅</span><span id="weatherText">Carregando clima…</span></div>
+    <div class="meta-block">
+      <div class="label" id="dateLabel">—</div>
+      <div class="clock-value" id="clock">00:00:00</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-view="dashboard">Dashboard</button>
+  <button class="tab-btn" data-view="pesquisa">Pesquisar Livro</button>
+  <button class="tab-btn" data-view="historico">Histórico</button>
+  <button class="tab-btn" data-view="estatisticas">Estatísticas</button>
+</nav>
+
+<main>
+
+  <section class="view active" id="view-dashboard">
+    <div class="stats-row" id="statsRow"></div>
+    <div class="dash-grid">
+      <div>
+        <div class="panel" id="turmasPanel">
+          <h2>📂 Turmas</h2>
+          <div id="turmasContainer"></div>
+        </div>
+        <div class="panel" style="margin-top:20px;">
+          <h2>📖 Empréstimos ativos</h2>
+          <div class="table-wrap">
+            <table id="loansTable">
+              <thead>
+                <tr>
+                  <th>Aluno</th><th>Código</th><th>Turma</th><th>Livro</th>
+                  <th>Empréstimo</th><th>Prazo</th><th>Situação</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="loansTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="reflexao-card">
+          <div class="tag">Reflexão do dia</div>
+          <blockquote id="reflexaoTexto">"Um livro aberto é uma janela para infinitos mundos."</blockquote>
+          <div class="autor" id="reflexaoAutor"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-turma">
+    <button class="back-link" id="btnVoltarDashboard">← Voltar ao Dashboard</button>
+    <div class="toolbar">
+      <h2 class="section-title" id="turmaTitulo">Turma</h2>
+      <button class="btn btn-primary" id="btnNovoEmprestimo">+ Novo Empréstimo</button>
+    </div>
+    <div class="panel">
+      <h2>👥 Alunos da turma</h2>
+      <div class="toolbar" style="margin-bottom:10px;">
+        <div class="muted" id="turmaAlunoCount">0 alunos cadastrados</div>
+        <button class="btn btn-ghost btn-small" id="btnNovoAluno">+ Adicionar aluno</button>
+      </div>
+      <div id="turmaAlunosLista"></div>
+    </div>
+    <div class="panel" style="margin-top:20px;">
+      <h2>📖 Empréstimos da turma</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Aluno</th><th>Livro</th><th>Empréstimo</th><th>Prazo</th><th>Situação</th><th>Status</th><th></th></tr></thead>
+          <tbody id="turmaLoansTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-pesquisa">
+    <h2 class="section-title">🔍 Pesquisar Livro</h2>
+    <div class="search-box">
+      <input type="text" id="searchBookInput" placeholder="Digite o nome do livro...">
+    </div>
+    <div id="searchResults"></div>
+  </section>
+
+  <section class="view" id="view-historico">
+    <h2 class="section-title">🕘 Histórico de Empréstimos</h2>
+    <div class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Aluno</th><th>Livro</th><th>Turma</th><th>Empréstimo</th><th>Devolução</th><th>Dias emprestado</th><th>Status</th></tr></thead>
+          <tbody id="historicoTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-estatisticas">
+    <h2 class="section-title">📊 Estatísticas</h2>
+    <div class="stats-row" id="statsRow2"></div>
+    <div class="charts-grid">
+      <div class="chart-card"><h3>Empréstimos por mês</h3><canvas id="chartMes"></canvas></div>
+      <div class="chart-card"><h3>Livros mais emprestados</h3><canvas id="chartLivros"></canvas></div>
+      <div class="chart-card">
+        <h3>🏆 Turma que mais lê</h3>
+        <div class="kv-list" id="rankTurmas"></div>
+      </div>
+      <div class="chart-card">
+        <h3>🏆 Alunos que mais pegaram livros</h3>
+        <div class="kv-list" id="rankAlunos"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="overlay" id="modalEmprestimo">
+  <div class="modal">
+    <div class="modal-head"><h2>Novo Empréstimo</h2><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <fieldset>
+        <legend>Dados do estudante</legend>
+        <div class="field-row">
+          <div class="field"><label>Nome do estudante</label><input type="text" id="fAlunoNome" list="dlAlunos"></div>
+          <div class="field"><label>Código do estudante</label><input type="text" id="fAlunoCodigo"></div>
+        </div>
+        <datalist id="dlAlunos"></datalist>
+      </fieldset>
+      <fieldset>
+        <legend>Livro</legend>
+        <div class="field autocomplete">
+          <label>Nome do livro</label>
+          <input type="text" id="fLivro" autocomplete="off">
+          <div class="ac-list" id="livroAcList" style="display:none;"></div>
+        </div>
+        <div class="info-box" id="livroOcupadoBox" style="display:none;"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Prazo</legend>
+        <div class="field-row">
+          <div class="field"><label>Data do empréstimo</label><input type="date" id="fDataEmprestimo"></div>
+          <div class="field"><label>Data prevista para devolução</label><input type="date" id="fDataDevolucao"></div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnSalvarEmprestimo">Registrar Empréstimo</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalAluno">
+  <div class="modal">
+    <div class="modal-head"><h2>Adicionar Aluno</h2><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Nome do aluno</label><input type="text" id="naAlunoNome"></div>
+      <div class="field"><label>Código do aluno</label><input type="text" id="naAlunoCodigo"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Cancelar</button>
+      <button class="btn btn-primary" id="btnSalvarAluno">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ====================== DATA LAYER (Firebase Firestore) ====================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDD8yg5_QOPYH2S1zx5FqxJoaZQ7jRD7MU",
+  authDomain: "bibliotecaemwpg.firebaseapp.com",
+  projectId: "bibliotecaemwpg",
+  storageBucket: "bibliotecaemwpg.firebasestorage.app",
+  messagingSenderId: "567591727027",
+  appId: "1:567591727027:web:4f8bc7f243e243ec9ee5c6",
+  measurementId: "G-RW3W6E2103"
+};
+
+// Inicializa Firebase e Firestore
+const app = initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
+const docRef = doc(firestore, "sistema", "biblioteca");
+
+// Objeto do Banco de Dados local que sincroniza com o Firebase
+let DB = { students: {}, loans: [], books: [] };
+
+function generateDefaultDB(){
+  const db = { students:{}, loans:[], books:[] };
+  for(let ano=1; ano<=9; ano++){
+    ['A','B','C'].forEach(t=>{ db.students[ano+'-'+t] = []; });
+  }
+  return db;
+}
+
+// Sincronização em tempo real nativa (Realtime sync) com Firestore
+onSnapshot(docRef, (snapshot) => {
+  if (snapshot.exists()) {
+    DB = snapshot.data();
+  } else {
+    // Caso o documento não exista na nuvem ainda, cria a estrutura inicial padrão
+    DB = generateDefaultDB();
+    setDoc(docRef, DB);
+  }
+  render();
+});
+
+async function saveDB(){
+  try {
+    await setDoc(docRef, DB);
+  } catch (e) {
+    console.error("Erro ao salvar dados no Firebase Firestore:", e);
+  }
+}
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+const TURMA_LABELS = (()=>{
+  const arr=[];
+  for(let ano=1;ano<=9;ano++){ ['A','B','C'].forEach(t=>arr.push(ano+'-'+t)); }
+  return arr;
+})();
+function turmaLabel(key){ if(!key) return '—'; const [ano,letra]=key.split('-'); return ano+'º Ano '+letra; }
+
+/* ====================== HEADER: clock, date, greeting, weather ====================== */
+function pad(n){return n.toString().padStart(2,'0');}
+function tickClock(){
+  const now = new Date();
+  const clockEl = document.getElementById('clock');
+  if(clockEl) clockEl.textContent = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  const dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const dateLabelEl = document.getElementById('dateLabel');
+  if(dateLabelEl) dateLabelEl.textContent = dias[now.getDay()]+', '+now.getDate()+' de '+meses[now.getMonth()];
+  const h = now.getHours();
+  const greet = h<12 ? 'Bom dia ☀️' : h<18 ? 'Boa tarde 🌤️' : 'Boa noite 🌙';
+  const greetingEl = document.getElementById('greeting');
+  if(greetingEl) greetingEl.textContent = greet;
+}
+setInterval(tickClock,1000); tickClock();
+
+async function loadWeather(){
+  try{
+    const pos = await new Promise((res,rej)=>{
+      if(!navigator.geolocation) return rej();
+      navigator.geolocation.getCurrentPosition(res, rej, {timeout:4000});
+    }).catch(()=>null);
+    const lat = pos ? pos.coords.latitude : -19.9167;
+    const lon = pos ? pos.coords.longitude : -43.9345;
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code`);
+    const data = await r.json();
+    const c = data.current;
+    const codeMap = {0:'☀️ Céu limpo',1:'🌤️ Poucas nuvens',2:'⛅ Parcialmente nublado',3:'☁️ Nublado',45:'🌫️ Neblina',48:'🌫️ Neblina',51:'🌦️ Garoa',61:'🌧️ Chuva',63:'🌧️ Chuva',65:'🌧️ Chuva forte',80:'🌧️ Pancadas',95:'⛈️ Tempestade'};
+    const desc = codeMap[c.weather_code] || '⛅ Tempo variável';
+    document.getElementById('weatherText').textContent = `${Math.round(c.temperature_2m)}°C · sensação ${Math.round(c.apparent_temperature)}°C · ${desc.split(' ').slice(1).join(' ')}`;
+    document.querySelector('#weatherPill .icon').textContent = desc.split(' ')[0];
+  }catch(e){
+    document.getElementById('weatherText').textContent = 'Clima indisponível';
+  }
+}
+loadWeather();
+
+/* ====================== REFLEXAO DO DIA ====================== */
+const REFLEXOES = [
+  ['"Um livro aberto é uma janela para infinitos mundos."',''],
+  ['"Ler é viajar sem sair do lugar."','Mário Quintana'],
+  ['"Quem lê muito e anda muito, vê muito e sabe muito."','Miguel de Cervantes'],
+  ['"O livro é um sonho que você segura nas mãos."','Neil Gaiman'],
+  ['"Cada livro é uma nova chance de aprender, sonhar e crescer."',''],
+  ['"A leitura de todos os bons livros é como uma conversa com as mais notáveis pessoas dos séculos passados."','René Descartes'],
+  ['"Não há amigo tão leal como um livro."','Ernest Hemingway'],
+  ['"Aprender é a única coisa que a mente nunca se cansa, nunca teme e nunca se arrepende."','Leonardo da Vinci'],
+  ['"Os livros são companheiros silenciosos de uma vida cheia de barulho."',''],
+  ['"Quanto mais eu lia, mais minha imaginação ganhava asas."','Malala Yousafzai'],
+  ['"A imaginação é mais importante que o conhecimento."','Albert Einstein'],
+  ['"Um livro é um presente que você pode abrir repetidas vezes."','Garrison Keillor'],
+  ['"A leitura é para a mente o que o exercício é para o corpo."','Joseph Addison'],
+  ['"Quem conta um conto, aumenta um sonho."',''],
+];
+function renderReflexao(){
+  const day = Math.floor(Date.now()/86400000);
+  const idx = day % REFLEXOES.length;
+  document.getElementById('reflexaoTexto').textContent = REFLEXOES[idx][0];
+  document.getElementById('reflexaoAutor').textContent = REFLEXOES[idx][1];
+}
+renderReflexao();
+
+/* ====================== TABS / VIEWS ====================== */
+let currentTurma = null;
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showView(btn.dataset.view));
+});
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const view = document.getElementById('view-'+name);
+  if(view) view.classList.add('active');
+  const btn = document.querySelector(`.tab-btn[data-view="${name}"]`);
+  if(btn) btn.classList.add('active');
+}
+
+/* ====================== DATE HELPERS ====================== */
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function fmtDate(s){ if(!s) return '—'; const [y,m,d]=s.split('-'); return d+'/'+m+'/'+y; }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+
+function situacao(loan){
+  if(loan.status==='devolvido') return {text:'Devolvido', cls:'ok'};
+  const diff = daysBetween(todayStr(), loan.dataDevolucao);
+  if(diff < 0) return {text:`⚠ Em atraso há ${Math.abs(diff)} dia(s)`, cls:'atraso', atraso:true};
+  if(diff === 0) return {text:'Vence hoje', cls:'alerta'};
+  if(diff <= 2) return {text:`${diff} dia(s) restante(s)`, cls:'alerta'};
+  return {text:`${diff} dia(s) restante(s)`, cls:'ok'};
+}
+
+/* ====================== RENDER: TURMAS GRID ====================== */
+function renderTurmas(){
+  const container = document.getElementById('turmasContainer');
+  if(!container) return;
+  container.innerHTML='';
+  for(let ano=1; ano<=9; ano++){
+    const block = document.createElement('div');
+    block.className='series-block';
+    const h3 = document.createElement('h3'); h3.textContent = ano+'º Ano'; block.appendChild(h3);
+    const row = document.createElement('div'); row.className='turma-row';
+    ['A','B','C'].forEach(letra=>{
+      const key = ano+'-'+letra;
+      const atrasos = (DB.loans || []).filter(l=>l.turma===key && l.status==='ativo' && daysBetween(todayStr(), l.dataDevolucao)<0).length;
+      const card = document.createElement('div');
+      card.className='turma-card';
+      card.innerHTML = `<div class="nome">Turma ${letra}</div><div class="qtd">${(DB.students[key]||[]).length} alunos</div>`+
+        (atrasos>0?`<div class="badge-atraso">${atrasos}</div>`:'');
+      card.addEventListener('click', ()=> openTurma(key));
+      row.appendChild(card);
+    });
+    block.appendChild(row);
+    container.appendChild(block);
+  }
+}
+
+/* ====================== STATS ROW ====================== */
+function renderStats(targetId){
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  const loans = DB.loans || [];
+  const emprestados = loans.filter(l=>l.status==='ativo').length;
+  const devolvidos = loans.filter(l=>l.status==='devolvido').length;
+  const atrasados = loans.filter(l=>l.status==='ativo' && daysBetween(todayStr(), l.dataDevolucao)<0).length;
+  el.innerHTML = `
+    <div class="stat-card"><div class="num">${emprestados}</div><div class="lbl">Empréstimos ativos</div></div>
+    <div class="stat-card"><div class="num">${devolvidos}</div><div class="lbl">Total devolvidos</div></div>
+    <div class="stat-card alert"><div class="num">${atrasados}</div><div class="lbl">Livros em atraso</div></div>
+    <div class="stat-card"><div class="num">${loans.length}</div><div class="lbl">Total de empréstimos</div></div>
+  `;
+}
+
+/* ====================== RENDER LOANS TABLE (active, dashboard) ====================== */
+function renderLoansTable(){
+  const tbody = document.getElementById('loansTbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  const loans = DB.loans || [];
+  const ativos = loans.filter(l=>l.status==='ativo').sort((a,b)=>{
+    const da = daysBetween(todayStr(), a.dataDevolucao), db_ = daysBetween(todayStr(), b.dataDevolucao);
+    return da-db_;
+  });
+  if(ativos.length===0){
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum empréstimo ativo no momento.</td></tr>`;
+    return;
+  }
+  ativos.forEach(l=>{
+    const sit = situacao(l);
+    const tr = document.createElement('tr');
+    if(sit.atraso) tr.classList.add('atraso');
+    tr.innerHTML = `
+      <td>${l.alunoNome}</td>
+      <td class="mono">${l.alunoCodigo||'—'}</td>
+      <td>${turmaLabel(l.turma)}</td>
+      <td>${l.livro}</td>
+      <td>${fmtDate(l.dataEmprestimo)}</td>
+      <td>${fmtDate(l.dataDevolucao)}</td>
+      <td>${sit.text}</td>
+      <td><span class="status-chip ${sit.cls}">${sit.atraso?'Em atraso':'Em dia'}</span></td>
+      <td><button class="btn btn-success btn-small" data-return="${l.id}">✅ Devolvido</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ====================== TURMA DETAIL VIEW ====================== */
+function openTurma(key){
+  currentTurma = key;
+  document.getElementById('turmaTitulo').textContent = turmaLabel(key);
+  renderTurmaAlunos();
+  renderTurmaLoans();
+  showView('turma');
+}
+document.getElementById('btnVoltarDashboard').addEventListener('click', ()=>showView('dashboard'));
+
+function renderTurmaAlunos(){
+  const lista = document.getElementById('turmaAlunosLista');
+  if(!lista) return;
+  const students = DB.students[currentTurma] || [];
+  document.getElementById('turmaAlunoCount').textContent = students.length+' aluno(s) cadastrado(s)';
+  lista.innerHTML='';
+  if(students.length===0){
+    lista.innerHTML = '<div class="empty-state">Nenhum aluno cadastrado nesta turma ainda.</div>';
+    return;
+  }
+  students.forEach(s=>{
+    const row = document.createElement('div');
+    row.className='student-row';
+    row.innerHTML = `
+      <div>
+        <div class="nome">${s.nome}</div>
+        <div class="codigo">Código: ${s.codigo||'—'}</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-ghost btn-small" data-emprestimo-aluno="${s.nome}|${s.codigo||''}">Novo empréstimo</button>
+        <button class="btn btn-ghost btn-small" style="color: var(--vermelho); border-color: rgba(194,69,69,0.2);" data-excluir-aluno="${s.id}">🗑️ Excluir</button>
+      </div>`;
+    lista.appendChild(row);
+  });
+}
+function renderTurmaLoans(){
+  const tbody = document.getElementById('turmaLoansTbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  const loans = (DB.loans || []).filter(l=>l.turma===currentTurma && l.status==='ativo');
+  if(loans.length===0){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum empréstimo ativo nesta turma.</td></tr>';
+    return;
+  }
+  loans.forEach(l=>{
+    const sit = situacao(l);
+    const tr = document.createElement('tr');
+    if(sit.atraso) tr.classList.add('atraso');
+    tr.innerHTML = `
+      <td>${l.alunoNome}</td><td>${l.livro}</td><td>${fmtDate(l.dataEmprestimo)}</td><td>${fmtDate(l.dataDevolucao)}</td>
+      <td>${sit.text}</td><td><span class="status-chip ${sit.cls}">${sit.atraso?'Em atraso':'Em dia'}</span></td>
+      <td><button class="btn btn-success btn-small" data-return="${l.id}">✅ Devolvido</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('btnNovoAluno').addEventListener('click', ()=>{
+  document.getElementById('naAlunoNome').value='';
+  document.getElementById('naAlunoCodigo').value='';
+  openModal('modalAluno');
+});
+document.getElementById('btnSalvarAluno').addEventListener('click', ()=>{
+  const nome = document.getElementById('naAlunoNome').value.trim();
+  const codigo = document.getElementById('naAlunoCodigo').value.trim();
+  if(!nome){ alert('Informe o nome do aluno.'); return; }
+  DB.students[currentTurma] = DB.students[currentTurma] || [];
+  DB.students[currentTurma].push({nome, codigo, id:uid()});
+  saveDB();
+  renderTurmaAlunos();
+  closeModal('modalAluno');
+});
+
+/* ====================== MODAL HELPERS ====================== */
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click', e=>{
+    e.target.closest('.overlay').classList.remove('active');
+  });
+});
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.classList.remove('active'); });
+});
+
+/* ====================== NOVO EMPRESTIMO MODAL ====================== */
+document.getElementById('btnNovoEmprestimo').addEventListener('click', ()=> openLoanModal());
+
+// Tratamento de cliques na lista de alunos (Novo Empréstimo e Exclusão)
+document.getElementById('turmaAlunosLista').addEventListener('click', e=>{
+  const btnEmp = e.target.closest('[data-emprestimo-aluno]');
+  if(btnEmp) {
+    const [nome,codigo] = btnEmp.dataset.emprestimoAluno.split('|');
+    openLoanModal(nome,codigo);
+    return;
+  }
+
+  // Lógica de exclusão corrigida adicionada aqui
+  const btnExc = e.target.closest('[data-excluir-aluno]');
+  if(btnExc) {
+    const studentId = btnExc.dataset.excluirAluno;
+    if(confirm('Deseja realmente remover este estudante da turma? (Os históricos de empréstimos antigos não serão apagados)')) {
+      DB.students[currentTurma] = (DB.students[currentTurma] || []).filter(s => s.id !== studentId);
+      saveDB();
+      renderTurmaAlunos();
+    }
+  }
+});
+
+function openLoanModal(nome='',codigo=''){
+  document.getElementById('fAlunoNome').value = nome;
+  document.getElementById('fAlunoCodigo').value = codigo;
+  document.getElementById('fLivro').value = '';
+  document.getElementById('livroOcupadoBox').style.display='none';
+  document.getElementById('fDataEmprestimo').value = todayStr();
+  const d = new Date(); d.setDate(d.getDate()+14);
+  document.getElementById('fDataDevolucao').value = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  refreshDatalistAlunos();
+  openModal('modalEmprestimo');
+}
+function refreshDatalistAlunos(){
+  const dl = document.getElementById('dlAlunos');
+  if(!dl) return;
+  dl.innerHTML='';
+  const students = DB.students[currentTurma] || [];
+  students.forEach(s=>{ const o=document.createElement('option'); o.value=s.nome; dl.appendChild(o); });
+}
+
+/* Autocomplete livro */
+const fLivro = document.getElementById('fLivro');
+const acList = document.getElementById('livroAcList');
+fLivro.addEventListener('input', ()=>{
+  const q = fLivro.value.trim().toLowerCase();
+  checkLivroStatus();
+  if(!q){ acList.style.display='none'; return; }
+  const books = DB.books || [];
+  const matches = books.filter(b=>b.toLowerCase().includes(q)).slice(0,8);
+  if(matches.length===0){ acList.style.display='none'; return; }
+  acList.innerHTML='';
+  matches.forEach(b=>{
+    const d=document.createElement('div'); d.textContent=b;
+    d.addEventListener('click', ()=>{ fLivro.value=b; acList.style.display='none'; checkLivroStatus(); });
+    acList.appendChild(d);
+  });
+  acList.style.display='block';
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.autocomplete')) acList.style.display='none';
+});
+function checkLivroStatus(){
+  const titulo = fLivro.value.trim();
+  const box = document.getElementById('livroOcupadoBox');
+  if(!titulo){ box.style.display='none'; return; }
+  const loans = DB.loans || [];
+  const ativo = loans.find(l=>l.status==='ativo' && l.livro.toLowerCase()===titulo.toLowerCase());
+  if(ativo){
+    box.style.display='block';
+    box.innerHTML = `<b>Livro atualmente emprestado.</b><br>
+      Aluno: ${ativo.alunoNome} &middot; Turma: ${turmaLabel(ativo.turma)}<br>
+      Devolução prevista: ${fmtDate(ativo.dataDevolucao)} &middot; ${situacao(ativo).text}`;
+  } else {
+    box.style.display='none';
+  }
+}
+
+document.getElementById('btnSalvarEmprestimo').addEventListener('click', ()=>{
+  const alunoNome = document.getElementById('fAlunoNome').value.trim();
+  const alunoCodigo = document.getElementById('fAlunoCodigo').value.trim();
+  const livro = document.getElementById('fLivro').value.trim();
+  const dataEmprestimo = document.getElementById('fDataEmprestimo').value;
+  const dataDevolucao = document.getElementById('fDataDevolucao').value;
+  if(!alunoNome || !livro || !dataEmprestimo || !dataDevolucao){
+    alert('Preencha nome do aluno, livro e as datas do empréstimo.'); return;
+  }
+  DB.loans = DB.loans || [];
+  const conflito = DB.loans.find(l=>l.status==='ativo' && l.livro.toLowerCase()===livro.toLowerCase());
+  if(conflito){
+    alert('Este livro já está emprestado e ainda não foi devolvido.'); return;
+  }
+  DB.books = DB.books || [];
+  if(!DB.books.includes(livro)) DB.books.push(livro);
+  
+  // Garante registro do estudante na lista da turma caso tenha digitado manualmente
+  const students = DB.students[currentTurma] = DB.students[currentTurma] || [];
+  if(!students.find(s=>s.nome.toLowerCase()===alunoNome.toLowerCase())){
+    students.push({nome:alunoNome, codigo:alunoCodigo, id:uid()});
+  }
+  DB.loans.push({
+    id: uid(), turma: currentTurma, alunoNome, alunoCodigo, livro,
+    dataEmprestimo, dataDevolucao, status:'ativo', dataDevolvidoReal:null
+  });
+  saveDB();
+  closeModal('modalEmprestimo');
+  renderTurmaAlunos(); renderTurmaLoans();
+});
+
+/* ====================== RETURN BOOK ====================== */
+document.addEventListener('click', e=>{
+  const btn = e.target.closest('[data-return]');
+  if(!btn) return;
+  const id = btn.dataset.return;
+  const loans = DB.loans || [];
+  const loan = loans.find(l=>l.id===id);
+  if(!loan) return;
+  loan.status='devolvido';
+  loan.dataDevolvidoReal = todayStr();
+  saveDB();
+  if(currentTurma){ renderTurmaAlunos(); renderTurmaLoans(); }
+});
+
+/* ====================== PESQUISA LIVRO ====================== */
+function renderSearchResults(){
+  const searchInput = document.getElementById('searchBookInput');
+  if(!searchInput) return;
+  const q = searchInput.value.trim().toLowerCase();
+  const wrap = document.getElementById('searchResults');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  if(!q){ wrap.innerHTML = '<div class="empty-state">Digite o nome de um livro para pesquisar.</div>'; return; }
+  const loans = DB.loans || [];
+  const books = DB.books || [];
+  const titles = [...new Set([...books, ...loans.map(l=>l.livro)])].filter(t=>t.toLowerCase().includes(q));
+  if(titles.length===0){ wrap.innerHTML = '<div class="empty-state">Nenhum livro encontrado.</div>'; return; }
+  titles.forEach(titulo=>{
+    const ativo = loans.find(l=>l.status==='ativo' && l.livro.toLowerCase()===titulo.toLowerCase());
+    const div = document.createElement('div');
+    div.className='book-result';
+    if(ativo){
+      const sit = situacao(ativo);
+      div.innerHTML = `<div>
+          <div class="titulo">${titulo}</div>
+          <div class="book-detail">Aluno: ${ativo.alunoNome} (${ativo.alunoCodigo||'s/cód.'}) · Turma: ${turmaLabel(ativo.turma)}</div>
+          <div class="book-detail">Empréstimo: ${fmtDate(ativo.dataEmprestimo)} · Devolução prevista: ${fmtDate(ativo.dataDevolucao)} · ${sit.text}</div>
+        </div>
+        <span class="status-chip ${sit.cls}">Emprestado</span>`;
+    } else {
+      div.innerHTML = `<div><div class="titulo">${titulo}</div><div class="book-detail">Disponível para empréstimo</div></div>
+        <span class="status-chip ok">Disponível</span>`;
+    }
+    wrap.appendChild(div);
+  });
+}
+document.getElementById('searchBookInput').addEventListener('input', renderSearchResults);
+
+/* ====================== HISTORICO ====================== */
+function renderHistorico(){
+  const tbody = document.getElementById('historicoTbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  const loans = DB.loans || [];
+  const devolvidos = loans.filter(l=>l.status==='devolvido').sort((a,b)=> (b.dataDevolvidoReal||'').localeCompare(a.dataDevolvidoReal||''));
+  if(devolvidos.length===0){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum empréstimo finalizado ainda.</td></tr>';
+    return;
+  }
+  devolvidos.forEach(l=>{
+    const dias = daysBetween(l.dataEmprestimo, l.dataDevolvidoReal);
+    const atrasou = daysBetween(l.dataDevolvidoReal, l.dataDevolucao) < 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.alunoNome}</td><td>${l.livro}</td><td>${turmaLabel(l.turma)}</td>
+      <td>${fmtDate(l.dataEmprestimo)}</td><td>${fmtDate(l.dataDevolvidoReal)}</td><td>${dias} dia(s)</td>
+      <td><span class="status-chip ${atrasou?'atraso':'ok'}">${atrasou?'Devolvido com atraso':'Devolvido em dia'}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ====================== ESTATISTICAS ====================== */
+let chartMes=null, chartLivros=null;
+function renderEstatisticas(){
+  renderStats('statsRow2');
+  const loans = DB.loans || [];
+
+  // turma que mais lê
+  const porTurma = {};
+  loans.forEach(l=>{ if(l.turma) porTurma[l.turma]=(porTurma[l.turma]||0)+1; });
+  const rankTurmasArr = Object.entries(porTurma).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('rankTurmas').innerHTML = rankTurmasArr.length
+    ? rankTurmasArr.map(([k,v])=>`<div><span>${turmaLabel(k)}</span><b>${v}</b></div>`).join('')
+    : '<div class="empty-state">Sem dados ainda.</div>';
+
+  // aluno que mais pegou livros
+  const porAluno = {};
+  loans.forEach(l=>{ const key=l.alunoNome+' ('+turmaLabel(l.turma)+')'; porAluno[key]=(porAluno[key]||0)+1; });
+  const rankAlunosArr = Object.entries(porAluno).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('rankAlunos').innerHTML = rankAlunosArr.length
+    ? rankAlunosArr.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')
+    : '<div class="empty-state">Sem dados ainda.</div>';
+
+  // por mes
+  const porMes = {};
+  loans.forEach(l=>{
+    const mes = l.dataEmprestimo ? l.dataEmprestimo.slice(0,7) : 'desconhecido';
+    porMes[mes] = (porMes[mes]||0)+1;
+  });
+  const mesesOrdenados = Object.keys(porMes).sort();
+  if(chartMes) chartMes.destroy();
+  const chartMesEl = document.getElementById('chartMes');
+  if(chartMesEl){
+    chartMes = new Chart(chartMesEl, {
+      type:'bar',
+      data:{ labels: mesesOrdenados, datasets:[{ label:'Empréstimos', data: mesesOrdenados.map(m=>porMes[m]), backgroundColor:'#4F86C6', borderRadius:6 }] },
+      options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{precision:0} } } }
+    });
+  }
+
+  // livros mais emprestados
+  const porLivro = {};
+  loans.forEach(l=>{ if(l.livro) porLivro[l.livro]=(porLivro[l.livro]||0)+1; });
+  const topLivros = Object.entries(porLivro).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(chartLivros) chartLivros.destroy();
+  const chartLivrosEl = document.getElementById('chartLivros');
+  if(chartLivrosEl){
+    chartLivros = new Chart(chartLivrosEl, {
+      type:'bar',
+      data:{ labels: topLivros.map(t=>t[0]), datasets:[{ label:'Vezes emprestado', data: topLivros.map(t=>t[1]), backgroundColor:'#2F8F6B', borderRadius:6 }] },
+      options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{ beginAtZero:true, ticks:{precision:0} } } }
+    });
+  }
+}
+
+/* ====================== MASTER RENDER ====================== */
+function render(){
+  renderStats('statsRow');
+  renderTurmas();
+  renderLoansTable();
+  if(currentTurma && document.getElementById('view-turma').classList.contains('active')){
+    renderTurmaAlunos(); renderTurmaLoans();
+  }
+  if(document.getElementById('view-pesquisa').classList.contains('active')) renderSearchResults();
+  if(document.getElementById('view-historico').classList.contains('active')) renderHistorico();
+  if(document.getElementById('view-estatisticas').classList.contains('active')) renderEstatisticas();
+}
+
+document.querySelector('.tab-btn[data-view="historico"]').addEventListener('click', renderHistorico);
+document.querySelector('.tab-btn[data-view="estatisticas"]').addEventListener('click', renderEstatisticas);
+document.querySelector('.tab-btn[data-view="pesquisa"]').addEventListener('click', renderSearchResults);
+
+// Renderização inicial
+render();
+</script>
+</body>
+</html>
